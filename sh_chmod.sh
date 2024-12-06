@@ -1,0 +1,1 @@
+sudo chmod -R a+rw /cpfs01/shared/public/$USER/1205/results/
