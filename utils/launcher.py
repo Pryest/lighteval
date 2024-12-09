@@ -20,9 +20,9 @@ local_models = {
     # "llama3-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3-70B/snapshots/b4d08b7db49d488da3ac49adf25a6b9ac01ae338",
 
     # "llama3.1-8b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-8B/snapshots/48d6d0fc4e02fb1269b36940650a1b7233035cbb",
-    # "llama3.1-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
+    "llama3.1-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
     
-    "llama3.2-1b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-1B/snapshots/5d853ed7d16ac794afa8f5c9c7f59f4e9c950954",
+    # "llama3.2-1b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-1B/snapshots/5d853ed7d16ac794afa8f5c9c7f59f4e9c950954",
     # "llama3.2-3b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-3B/snapshots/5cc0ffe09ee49f7be6ca7c794ee6bd7245e84e60",
 
     # "mistral-v0.1-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--mistralai--Mistral-7B-v0.1/snapshots/26bca36bde8333b5d7f72e9ed20ccda6a618af24",
@@ -105,7 +105,7 @@ python {entry_file} \
 --model_name={model_name} \
 --dataset_name={dataset_name} \
 --batch_size={batch_size} \
-{infer_only}{judge_only}--tp={tp} --auto_launch \
+{infer_only}{judge_only}--auto_launch \
 2>&1 | tee {log_file} \
 '"\
 """
@@ -154,7 +154,6 @@ def run(
             entry_file = entry_file,
             model_name = model_name,
             dataset_name = dataset_name,
-            tp = tp,
             log_file = log_file,
             work_dir = work_dir,
             batch_size = batch_size,

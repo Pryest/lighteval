@@ -1,4 +1,5 @@
 from vllm import LLM, SamplingParams
+import torch
 from transformers import AutoTokenizer
 
 
@@ -9,6 +10,7 @@ def load_model_and_tokenizer_gen(
     temperature=0., 
     **kwargs,
 ):
+    torch.cuda.memory._set_allocator_settings('expandable_segments:False')
 
     pipe = LLM(model=model_repoid_or_path, tensor_parallel_size=tp)
     
@@ -27,8 +29,10 @@ def load_model_and_tokenizer_ppl(
     tp=1,
     **kwargs,
 ):
+    
+    torch.cuda.memory._set_allocator_settings('expandable_segments:False')
 
-    print(f"{kwargs} does not have any effect in load_model_and_tokenizer_ppl")
+    print(f"{kwargs} do not have any effect in load_model_and_tokenizer_ppl")
 
     pipe = LLM(model=model_repoid_or_path, tensor_parallel_size=tp)
     

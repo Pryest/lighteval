@@ -6,6 +6,14 @@ def gen_collate_fn_v1(batch):
         prompts.append("Question: {question}?\nAnswer: ".format(question=x["prompt"].rstrip("?")))
     return {"ids": ids, "prompts": prompts,}
 
+def gen_collate_fn_cot_v2(batch):
+    ids = []
+    prompts = []
+    for x in batch:
+        ids.append(x["task_id"])
+        prompts.append(r"{question}?\nPlease reason step by step, and put your final answer within {{}}.".format(question=x["prompt"].rstrip("?")))
+    return {"ids": ids, "prompts": prompts,}
+
 def gen_post_process_func_v1(
     ids,
     prompts,

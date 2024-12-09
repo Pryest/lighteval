@@ -52,7 +52,7 @@ def system_2(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="all")
-    parser.add_argument("--dataset_name", type=str, default="mmlu")
+    parser.add_argument("--dataset_name", type=str, default="gsm8k")
     parser.add_argument("--log_dir", type=str, default=f"/cpfs01/shared/public/{os.environ['USER']}/1205/logs")
     parser.add_argument("--save_dir", type=str, default=f"/cpfs01/shared/public/{os.environ['USER']}/1205/results")
     parser.add_argument("--batch_size", type=int, default=32)
