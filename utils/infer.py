@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import torch
 from torch.utils.data import DataLoader
 from .jsonl import stream_jsonl, write_jsonl
 
@@ -9,8 +10,15 @@ def infer_with_conf(
     save_path, 
     infer_only,
     judge_only,
+    n=1,
+    seed=1001,
     enable_tqdm=True
 ):
+    
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
     dataset = infer_conf["dataset"]
     batch_size = infer_conf["batch_size"]
     collate_fn = infer_conf["collate_fn"]
@@ -29,7 +37,7 @@ def infer_with_conf(
             kwargs["outputs"] = outputs
 
             if post_process_func:
-                save_datas.extend(post_process_func(**kwargs))
+                save_datas.extend(post_process_func(**kwargs, n=n))
             else:
                 save_datas.extend(kwargs)
         
@@ -38,11 +46,13 @@ def infer_with_conf(
     if not infer_only:
         cnt, tot = 0, 0
         save_datas = []
-        for data, save_data in zip(ds, stream_jsonl(str(save_path))):
-            judge_results = dataset.judge(data, save_data)
+
+        for i, save_data in enumerate(stream_jsonl(str(save_path))):
+            judge_results = dataset.judge(ds[i//n], save_data)
             save_data.update(judge_results)
             save_datas.append(save_data)
             cnt += judge_results["passed"]
             tot += 1
+
         write_jsonl(save_path, save_datas)
-        print(f"judge results: {cnt}/{tot}= {cnt/tot:.4f}")
+        print(f"judge results: {cnt}/{tot} = {cnt/tot:.4f}")

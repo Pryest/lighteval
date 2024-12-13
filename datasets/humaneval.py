@@ -46,25 +46,27 @@ def post_process_func_v1(
     ids,
     prompts,
     outputs,
+    n=1,
 ):
     save_datas = []
     for gid, prompt, output in zip(ids, prompts, outputs):
-        split_text = output.outputs[0].text.split("\n\n\n")
-        for i in range(len(split_text)):
-            if len(split_text[i].strip()) > 0 and not split_text[i].strip().startswith("#"):
-                completion = "\n\n\n".join(split_text[:i+1])
-                break
-        else:
-            completion = ""
-        
-        save_data = dict(
-            task_id=gid, 
-            prompt=prompt, 
-            completion=completion,
-            original_response=output.outputs[0].text
-        )
+        for j in range(n):
+            split_text = output.outputs[j].text.split("\n\n\n")
+            for i in range(len(split_text)):
+                if len(split_text[i].strip()) > 0 and not split_text[i].strip().startswith("#"):
+                    completion = "\n\n\n".join(split_text[:i+1])
+                    break
+            else:
+                completion = ""
+            
+            save_data = dict(
+                task_id=gid, 
+                prompt=prompt, 
+                completion=completion,
+                original_response=output.outputs[j].text
+            )
 
-        save_datas.append(save_data)
+            save_datas.append(save_data)
     return save_datas
 
 humaneval_gen_conf = {

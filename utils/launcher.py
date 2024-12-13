@@ -4,26 +4,26 @@ import os
 import re
 import math
 
-local_datasets = ["triviaqa", "nq"]
+local_datasets = ["humaneval"]
 
 local_models = {
-    # "llama-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--huggyllama--llama-7b/snapshots/4782ad278652c7c71b72204d462d6d01eaaf7549",
+    "llama-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--huggyllama--llama-7b/snapshots/4782ad278652c7c71b72204d462d6d01eaaf7549",
     # "llama-13b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--huggyllama--llama-13b/snapshots/bf57045473f207bb1de1ed035ace226f4d9f9bba",
     # "llama-30b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--huggyllama--llama-30b/snapshots/2b1edcdb3c7ced7bce6c1aa75c94545777c3118b",
     # "llama-65b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--huggyllama--llama-65b/snapshots/49707c5313d34d1c5a846e29cf2a2a650c22c8ee",
 
-    # "llama2-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-2-7b-hf/snapshots/01c7f73d771dfac7d292323805ebc428287df4f9",
+    "llama2-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-2-7b-hf/snapshots/01c7f73d771dfac7d292323805ebc428287df4f9",
     # "llama2-13b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-2-13b-hf/snapshots/dc1d3b3bfdb69df26f8fc966c16353274b138c55",
     # "llama2-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-2-70b-hf/snapshots/3aba440b59558f995867ba6e1f58f21d0336b5bb",
 
-    # "llama3-8b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3-8B/snapshots/b6887ce03ea47d068bf8502ba6ed27f8c5c12a6b",
+    "llama3-8b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3-8B/snapshots/b6887ce03ea47d068bf8502ba6ed27f8c5c12a6b",
     # "llama3-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3-70B/snapshots/b4d08b7db49d488da3ac49adf25a6b9ac01ae338",
 
-    # "llama3.1-8b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-8B/snapshots/48d6d0fc4e02fb1269b36940650a1b7233035cbb",
-    "llama3.1-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
+    "llama3.1-8b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-8B/snapshots/48d6d0fc4e02fb1269b36940650a1b7233035cbb",
+    # "llama3.1-70b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
     
-    # "llama3.2-1b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-1B/snapshots/5d853ed7d16ac794afa8f5c9c7f59f4e9c950954",
-    # "llama3.2-3b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-3B/snapshots/5cc0ffe09ee49f7be6ca7c794ee6bd7245e84e60",
+    "llama3.2-1b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-1B/snapshots/5d853ed7d16ac794afa8f5c9c7f59f4e9c950954",
+    "llama3.2-3b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--meta-llama--Llama-3.2-3B/snapshots/5cc0ffe09ee49f7be6ca7c794ee6bd7245e84e60",
 
     # "mistral-v0.1-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--mistralai--Mistral-7B-v0.1/snapshots/26bca36bde8333b5d7f72e9ed20ccda6a618af24",
     # "mistral-v0.2-7b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--mistral-community--Mistral-7B-v0.2/snapshots/2c3e624962b1a3f3fbf52e15969565caa7bc064a",
@@ -105,6 +105,8 @@ python {entry_file} \
 --model_name={model_name} \
 --dataset_name={dataset_name} \
 --batch_size={batch_size} \
+--n={n} \
+--temperature={temperature} \
 {infer_only}{judge_only}--auto_launch \
 2>&1 | tee {log_file} \
 '"\
@@ -130,15 +132,17 @@ def run(
     entry_file, 
     log_dir, 
     batch_size, 
+    n,
+    temperature,
     infer_only, 
     judge_only
 ):
     if model_name == "all":
         for model_name, model_path in local_models.items():
-            run(model_name, dataset_name, entry_file, log_dir, batch_size, infer_only, judge_only)
+            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
-            run(model_name, dataset_name, entry_file, log_dir, batch_size, infer_only, judge_only)
+            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only)
     else:
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
@@ -157,8 +161,10 @@ def run(
             log_file = log_file,
             work_dir = work_dir,
             batch_size = batch_size,
-            infer_only = "--infer_only \\ \n" if infer_only else "",
-            judge_only = "--judge_only \\ \n" if judge_only else "",
+            n = n,
+            temperature = temperature,
+            infer_only = "--infer_only " if infer_only else "",
+            judge_only = "--judge_only " if judge_only else "",
         )
 
         ret = subprocess.run(ali_h_script, shell=True)

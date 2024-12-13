@@ -18,32 +18,36 @@ def gen_post_process_func_v1(
     ids,
     prompts,
     outputs,
+    n=1,
 ):
     save_datas = []
     for gid, prompt, output in zip(ids, prompts, outputs):
-        split_text = output.outputs[0].text.split("\n")
-        for i in range(len(split_text)):
-            if len(split_text[i].strip()) > 0 :
-                completion = split_text[i].strip()
-                break          
-        else:
-            completion = ""
-        
-        save_data = dict(
-            task_id=gid, 
-            prompt=prompt, 
-            completion=completion,
-            original_response=output.outputs[0].text
-        )
+        for j in range(n):
+            split_text = output.outputs[j].text.split("\n")
+            for i in range(len(split_text)):
+                if len(split_text[i].strip()) > 0 :
+                    completion = split_text[i].strip()
+                    break          
+            else:
+                completion = ""
+            
+            save_data = dict(
+                task_id=gid, 
+                prompt=prompt, 
+                completion=completion,
+                original_response=output.outputs[j].text
+            )
 
-        save_datas.append(save_data)
+            save_datas.append(save_data)
     return save_datas
 
 def ppl_post_process_func_v1(
     ids,
     prompts,
     outputs,
+    n=1,
 ):
+    assert n == 1, "n should be 1 for ppl"
     save_datas = []
     for gid, prompt, output in zip(ids, prompts, outputs):
         logprobs = sorted(list(output.outputs[0].logprobs[0].items()), key=lambda x: x[1].rank)
