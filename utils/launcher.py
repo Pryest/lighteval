@@ -82,6 +82,7 @@ local_models = {
     # "deepSeek-coder-v2-236b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--deepseek-ai--DeepSeek-Coder-V2-Base/snapshots/0e809b58ce4354bf3e37f882b7de727241a1afcb",
     # "deepSeek-coder-v2-16b":"/cpfs01/shared/public/pretrain_transfer_data/puyu_transfer_data/guohonglin/hf_hub/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Base/snapshots/e5e79b92c85f8f9182ec006b575483227201fd5e",
     
+    "test-1b": "/cpfs01/shared/public/pengrunyu/1205/routercollection/save_test_dec",
 }
 
 ali_h_script_format = """\
@@ -99,7 +100,7 @@ dlc create job \
 --worker_shared_memory "100Gi"  \
 --command="bash -c '\
 export USER=$USER && \
-source /cpfs01/shared/public/$USER/anaconda3/bin/activate /cpfs01/shared/public/$USER/anaconda3/envs/1205/ && \
+source /cpfs01/shared/public/$USER/anaconda3/bin/activate /cpfs01/shared/public/$USER/anaconda3/envs/1216/ && \
 cd {work_dir} && export VLLM_USE_MODELSCOPE=False && \
 python {entry_file} \
 --model_name={model_name} \
@@ -107,7 +108,7 @@ python {entry_file} \
 --batch_size={batch_size} \
 --n={n} \
 --temperature={temperature} \
-{infer_only}{judge_only}--auto_launch \
+{infer_only}{judge_only}{pik}--auto_launch \
 2>&1 | tee {log_file} \
 '"\
 """
@@ -135,14 +136,15 @@ def run(
     n,
     temperature,
     infer_only, 
-    judge_only
+    judge_only,
+    pik,
 ):
     if model_name == "all":
         for model_name, model_path in local_models.items():
-            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only)
+            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
-            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only)
+            run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
     else:
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
@@ -165,6 +167,7 @@ def run(
             temperature = temperature,
             infer_only = "--infer_only " if infer_only else "",
             judge_only = "--judge_only " if judge_only else "",
+            pik = "--pik " if pik else "",
         )
 
         ret = subprocess.run(ali_h_script, shell=True)

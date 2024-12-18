@@ -15,9 +15,10 @@ def system_1(
     temperature,
     infer_only,
     judge_only,
+    pik,
 ):
     from datasets import infer_confs
-    from utils.infer import infer_with_conf
+    from utils.infer import infer_with_conf, pred_pik
     from utils.loader import load_fns
     
     model_path = local_models[model_name]
@@ -27,14 +28,28 @@ def system_1(
     infer_conf["batch_size"] = batch_size
 
     version = infer_conf.get("version", "v0")
-    save_dir = Path(save_dir) / str(temperature) / str(n) / dataset_name / version
+
+    if all((infer_only, pik)):
+        save_dir = Path(save_dir) / dataset_name / version / model_name
+    elif pik:
+        save_dir = Path(save_dir) / "pik" / dataset_name / version
+    else:
+        save_dir = Path(save_dir) / str(temperature) / str(n) / dataset_name / version
+    
     os.makedirs(save_dir, exist_ok=True)
     save_file = save_dir / (model_name + ".jsonl")
 
-    load_fn = load_fns[infer_conf["type"]]
+    if pik:
+        load_fn = load_fns["pik"]
+    else:
+        load_fn = load_fns[infer_conf["type"]]
 
-    llm, tokenizer, sampling_params = load_fn(model_path, tp, n=n, temperature=temperature)
-    infer_with_conf(llm, sampling_params, infer_conf, save_file, infer_only, judge_only, n=n)
+    if pik:
+        llm, tokenizer, wik = load_fn(model_path, tp)
+        pred_pik(llm, wik, infer_conf, save_file, infer_only)
+    else:
+        llm, tokenizer, sampling_params = load_fn(model_path, tp, n=n, temperature=temperature)
+        infer_with_conf(llm, sampling_params, infer_conf, save_file, infer_only, judge_only, n=n)
 
 
 def system_2(
@@ -47,16 +62,17 @@ def system_2(
     temperature,
     infer_only,
     judge_only,
+    pik,
 ):
     entry_file = __file__
     log_dir = Path(log_dir) / launch_time
     os.makedirs(log_dir, exist_ok=True)
-    run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only)
+    run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="all")
-    parser.add_argument("--dataset_name", type=str, default="gsm8k_train")
+    parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
     parser.add_argument("--log_dir", type=str, default=f"/cpfs01/shared/public/{os.environ['USER']}/1205/logs")
     parser.add_argument("--save_dir", type=str, default=f"/cpfs01/shared/public/{os.environ['USER']}/1205/results")
     parser.add_argument("--batch_size", type=int, default=4)
@@ -66,6 +82,7 @@ if __name__ == "__main__":
     parser.add_argument("--infer_only", action="store_true")
     parser.add_argument("--judge_only", action="store_true")
     parser.add_argument("--auto_launch", action="store_true")
+    parser.add_argument("--pik", action="store_true")
 
     args, unknown_args = parser.parse_known_args()
 
@@ -93,8 +110,10 @@ if __name__ == "__main__":
                 f.write(" \\\n --infer_only")
             if args.judge_only:
                 f.write(" \\\n --judge_only")
+            if args.pik:
+                f.write(" \\\n --pik")
 
     if args.auto_launch:
-        system_1(args.model_name, args.dataset_name, args.save_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only)
+        system_1(args.model_name, args.dataset_name, args.save_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik)
     else:
-        system_2(launch_time, args.model_name, args.dataset_name, args.log_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only)
+        system_2(launch_time, args.model_name, args.dataset_name, args.log_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik)
