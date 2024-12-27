@@ -225,7 +225,7 @@ def volc_run(
             volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
-            ali_h_a_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
     else:
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
@@ -248,7 +248,7 @@ def volc_run(
         r_yaml["TaskName"] = model_name + "_" + dataset_name
         r_yaml["DelayExitTimeSeconds"] = "0"
 
-        r_yaml["Entrypoint"] = entry_file.format(
+        r_yaml["Entrypoint"] = volc_endpoint.format(
             entry_file = entry_file,
             model_name = model_name,
             dataset_name = dataset_name,

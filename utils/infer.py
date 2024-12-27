@@ -46,7 +46,7 @@ def infer_with_conf(
         
         write_jsonl(save_path, save_datas)
 
-    if not infer_only:
+    if not infer_only and hasattr(dataset, "judge"):
         cnt, tot = 0, 0
         save_datas = []
 

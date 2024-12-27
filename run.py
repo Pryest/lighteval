@@ -72,7 +72,7 @@ def system_2(
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="all")
-    parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
+    parser.add_argument("--dataset_name", type=str, default="all")
     parser.add_argument("--log_dir", type=str, default=f"../logs")
     parser.add_argument("--save_dir", type=str, default=f"../results")
     parser.add_argument("--batch_size", type=int, default=4)
