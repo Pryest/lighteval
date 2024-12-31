@@ -53,7 +53,7 @@ def load_model_and_tokenizer_pik(
 
     print(f"{kwargs} do not have any effect in load_model_and_tokenizer_ppl")
 
-    pipe = LLM(model=model_repoid_or_path, tensor_parallel_size=tp, task="embedding")
+    pipe = LLM(model=model_repoid_or_path, tensor_parallel_size=tp, task="embed")
     
     tokenizer = AutoTokenizer.from_pretrained(model_repoid_or_path, trust_remote_code=True)
 

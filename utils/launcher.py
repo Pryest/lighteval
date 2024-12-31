@@ -5,9 +5,10 @@ import re
 import math
 import yaml
 
-local_datasets = ["humaneval"]
 
-model_prefix = os.environ["model_prefix"]
+local_datasets = ["humaneval", "nq", "triviaqa", "gsm8k", "triviaqa_train", "gsm8k_train"] # , "nq_train"]
+
+model_prefix = "/fs-computility/llm/shared/llmeval/models/opencompass_hf_hub/"
 
 local_models = {
     "llama-7b":f"{model_prefix}/models--huggyllama--llama-7b/snapshots/4782ad278652c7c71b72204d462d6d01eaaf7549",
@@ -23,13 +24,13 @@ local_models = {
     # "llama3-70b":f"{model_prefix}/models--meta-llama--Meta-Llama-3-70B/snapshots/b4d08b7db49d488da3ac49adf25a6b9ac01ae338",
 
     "llama3.1-8b":f"{model_prefix}/models--meta-llama--Meta-Llama-3.1-8B/snapshots/48d6d0fc4e02fb1269b36940650a1b7233035cbb",
-    # "llama3.1-70b":f"{model_prefix}/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
+    "llama3.1-70b":f"{model_prefix}/models--meta-llama--Meta-Llama-3.1-70B/snapshots/7740ff69081bd553f4879f71eebcc2d6df2fbcb3",
     
     "llama3.2-1b":f"{model_prefix}/models--meta-llama--Llama-3.2-1B/snapshots/5d853ed7d16ac794afa8f5c9c7f59f4e9c950954",
     "llama3.2-3b":f"{model_prefix}/models--meta-llama--Llama-3.2-3B/snapshots/5cc0ffe09ee49f7be6ca7c794ee6bd7245e84e60",
 
-    # "mistral-v0.1-7b":f"{model_prefix}/models--mistralai--Mistral-7B-v0.1/snapshots/26bca36bde8333b5d7f72e9ed20ccda6a618af24",
-    # "mistral-v0.3-7b":f"{model_prefix}/models--mistralai--Mistral-7B-v0.3/snapshots/b67d6a03ca097c5122fa65904fce0413500bf8c8",
+    "mistral-v0.1-7b":f"{model_prefix}/models--mistralai--Mistral-7B-v0.1/snapshots/26bca36bde8333b5d7f72e9ed20ccda6a618af24",
+    "mistral-v0.3-7b":f"{model_prefix}/models--mistralai--Mistral-7B-v0.3/snapshots/b67d6a03ca097c5122fa65904fce0413500bf8c8",
 
     # "mixtral-v0.1-8x7-56b":f"{model_prefix}/models--mistralai--Mixtral-8x7B-v0.1/snapshots/58301445dc1378584211722b7ebf8743ec4e192b",
     # "mixtral-v0.1-8x22-176b":f"{model_prefix}/models--mistralai--Mixtral-8x22B-v0.1/snapshots/b03e260818710044a2f088d88fab12bb220884fb",
@@ -88,15 +89,15 @@ local_models = {
 ali_h_a_script_format = """\
 dlc create job \
 --kind PyTorchJob \
---config dlc.cfg \
+--config /cpfs01/shared/llm_ddd/b_cpfs_trasfer_data/pengrunyu/dlc.cfg \
 --name vllm_test --priority 4 \
 --data_sources="" \
 --worker_count 1 \
 --worker_cpu {worker_cpu} \
 --worker_gpu {worker_gpu} \
 --worker_memory "{worker_memory}Gi" \
---worker_image=* \
---workspace_id=* \
+--worker_image=pjlab-shanghai-acr-registry-vpc.cn-shanghai.cr.aliyuncs.com/pjlab-eflops/jiaopenglong:py310-torch24-flash263-cu124cudnn91-accl \
+--workspace_id=ws1ujefpjyfgqjwp \
 --worker_shared_memory "100Gi"  \
 --command="bash -c '\
 export datadir=$datadir && \
@@ -107,11 +108,12 @@ python {entry_file} \
 --batch_size={batch_size} \
 --n={n} \
 --temperature={temperature} \
-{infer_only}{judge_only}{pik}--auto_launch \
+{infer_only}{judge_only}{pik}{try_resume}--auto_launch \
 2>&1 | tee {log_file} \
 '"\
 """
 
+# wsu38o3r5miz6dof     ws1os366fx8vi304
 
 def get_tp(model_name):
     model_size = float(re.findall("([\d\.]*)b", model_name)[0])
@@ -135,13 +137,14 @@ def ali_h_a_run(
     infer_only, 
     judge_only,
     pik,
+    try_resume,
 ):
     if model_name == "all":
         for model_name, model_path in local_models.items():
-            ali_h_a_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+            ali_h_a_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
-            ali_h_a_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+            ali_h_a_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     else:
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
@@ -165,14 +168,15 @@ def ali_h_a_run(
             infer_only = "--infer_only " if infer_only else "",
             judge_only = "--judge_only " if judge_only else "",
             pik = "--pik " if pik else "",
+            try_resume = "--try_resume " if try_resume else "",
         )
 
         ret = subprocess.run(ali_h_script, shell=True)
 
 
-volc_endpoint = """\
-bash -c '\
-export datadir=$datadir && \
+volc_entrypoint = """\
+export datadir=/fs-computility/llm/shared/pengrunyu/data && \
+source /fs-computility/llm/shared/pengrunyu/miniconda3/bin/activate /fs-computility/llm/shared/pengrunyu/miniconda3/envs/1225/ && \
 cd {work_dir} && export VLLM_USE_MODELSCOPE=False && \
 python {entry_file} \
 --model_name={model_name} \
@@ -180,9 +184,8 @@ python {entry_file} \
 --batch_size={batch_size} \
 --n={n} \
 --temperature={temperature} \
-{infer_only}{judge_only}{pik}--auto_launch \
+{infer_only}{judge_only}{pik}{try_resume}--auto_launch \
 2>&1 | tee {log_file} \
-'\
 """
 
 def read_yaml_to_dict(yaml_path: str):
@@ -219,13 +222,14 @@ def volc_run(
     infer_only, 
     judge_only,
     pik,
+    try_resume,
 ):
     if model_name == "all":
         for model_name, model_path in local_models.items():
-            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
-            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     else:
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
@@ -245,10 +249,19 @@ def volc_run(
         r_yaml["EnableTensorBoard"] = False
         
         r_yaml["Tags"] = ["inference", "vllm", "lighteval"]
-        r_yaml["TaskName"] = model_name + "_" + dataset_name
+        r_yaml["TaskName"] = model_name.replace(".", "_") + "--" + dataset_name
         r_yaml["DelayExitTimeSeconds"] = "0"
 
-        r_yaml["Entrypoint"] = volc_endpoint.format(
+        if try_resume:
+            r_yaml["Preemptible"] = True
+            r_yaml["RetryOptions"] = {
+                "EnableRetry": True,
+                "MaxRetryTimes": 100,
+                "IntervalSeconds": 0,
+                "PolicySets": ["InstanceReclaimed"]
+            }
+
+        r_yaml["Entrypoint"] = volc_entrypoint.format(
             entry_file = entry_file,
             model_name = model_name,
             dataset_name = dataset_name,
@@ -260,10 +273,12 @@ def volc_run(
             infer_only = "--infer_only " if infer_only else "",
             judge_only = "--judge_only " if judge_only else "",
             pik = "--pik " if pik else "",
+            try_resume = "--try_resume " if try_resume else "",
         )
                 
         save_dict_to_yaml(r_yaml, yaml_file)
+        subprocess.run(f"volc ml_task submit -c {yaml_file}", shell=True)
 
 
 def run(*args, **kwargs):
-    pass
+    volc_run(*args, **kwargs)

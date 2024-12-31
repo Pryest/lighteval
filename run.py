@@ -16,6 +16,7 @@ def system_1(
     infer_only,
     judge_only,
     pik,
+    try_resume,
 ):
     from datasets import infer_confs
     from utils.infer import infer_with_conf, pred_pik
@@ -46,10 +47,10 @@ def system_1(
 
     if pik:
         llm, tokenizer, wik = load_fn(model_path, tp)
-        pred_pik(llm, wik, infer_conf, save_file, infer_only)
+        pred_pik(llm, wik, infer_conf, save_file, infer_only, try_resume)
     else:
         llm, tokenizer, sampling_params = load_fn(model_path, tp, n=n, temperature=temperature)
-        infer_with_conf(llm, sampling_params, infer_conf, save_file, infer_only, judge_only, n=n)
+        infer_with_conf(llm, sampling_params, infer_conf, save_file, infer_only, judge_only, n=n, try_resume=try_resume)
 
 
 def system_2(
@@ -63,16 +64,19 @@ def system_2(
     infer_only,
     judge_only,
     pik,
+    try_resume,
 ):
     entry_file = __file__
     log_dir = Path(log_dir) / launch_time
     os.makedirs(log_dir, exist_ok=True)
-    run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik)
+    run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--model_name", type=str, default="all")
-    parser.add_argument("--dataset_name", type=str, default="all")
+    # parser.add_argument("--dataset_name", type=str, default="all")
+    # parser.add_argument("--model_name", type=str, default="llama3.1-70b")
+    parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
     parser.add_argument("--log_dir", type=str, default=f"../logs")
     parser.add_argument("--save_dir", type=str, default=f"../results")
     parser.add_argument("--batch_size", type=int, default=4)
@@ -82,6 +86,7 @@ if __name__ == "__main__":
     parser.add_argument("--infer_only", action="store_true")
     parser.add_argument("--judge_only", action="store_true")
     parser.add_argument("--auto_launch", action="store_true")
+    parser.add_argument("--try_resume", action="store_true")
     parser.add_argument("--pik", action="store_true")
 
     args, unknown_args = parser.parse_known_args()
@@ -114,6 +119,6 @@ if __name__ == "__main__":
                 f.write(" \\\n --pik")
 
     if args.auto_launch:
-        system_1(args.model_name, args.dataset_name, args.save_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik)
+        system_1(args.model_name, args.dataset_name, args.save_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik, args.try_resume)
     else:
-        system_2(launch_time, args.model_name, args.dataset_name, args.log_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik)
+        system_2(launch_time, args.model_name, args.dataset_name, args.log_dir, args.batch_size, args.n, args.temperature, args.infer_only, args.judge_only, args.pik, args.try_resume)
