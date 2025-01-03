@@ -58,7 +58,7 @@ def load_model_and_tokenizer_pik(
     tokenizer = AutoTokenizer.from_pretrained(model_repoid_or_path, trust_remote_code=True)
 
     if os.path.exists(os.path.join(model_repoid_or_path, "wik.pt")):
-        wik = torch.load(os.path.join(model_repoid_or_path, "wik.pt"), map_location="cpu")["weight"]
+        wik = torch.load(os.path.join(model_repoid_or_path, "wik.pt"), map_location="cpu")["weight"].to(dtype=torch.float32)
     else:
         wik = None
 

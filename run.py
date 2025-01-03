@@ -4,7 +4,7 @@ from datetime import datetime
 from pathlib import Path
 import os
 
-from utils.launcher import run, local_models, get_tp
+from utils.launcher import run, local_models, get_tp, get_trained_dict
 
 def system_1(
     model_name, 
@@ -22,6 +22,7 @@ def system_1(
     from utils.infer import infer_with_conf, pred_pik
     from utils.loader import load_fns
     
+    local_models.update(get_trained_dict())
     model_path = local_models[model_name]
     tp = get_tp(model_name)
     
@@ -73,15 +74,15 @@ def system_2(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="all")
-    # parser.add_argument("--dataset_name", type=str, default="all")
+    parser.add_argument("--model_name", type=str, default="test_all")
+    parser.add_argument("--dataset_name", type=str, default="all")
     # parser.add_argument("--model_name", type=str, default="llama3.1-70b")
-    parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
+    # parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
     parser.add_argument("--log_dir", type=str, default=f"../logs")
     parser.add_argument("--save_dir", type=str, default=f"../results")
     parser.add_argument("--batch_size", type=int, default=4)
-    parser.add_argument("--n", type=int, default=32)
-    parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument("--n", type=int, default=1)
+    parser.add_argument("--temperature", type=float, default=0.0)
 
     parser.add_argument("--infer_only", action="store_true")
     parser.add_argument("--judge_only", action="store_true")
@@ -90,6 +91,8 @@ if __name__ == "__main__":
     parser.add_argument("--pik", action="store_true")
 
     args, unknown_args = parser.parse_known_args()
+
+    assert args.try_resume
 
     if unknown_args:
         print(f"unknown_args: {unknown_args}")
