@@ -6,7 +6,9 @@ import math
 import yaml
 
 
-local_datasets = ["humaneval", "nq", "triviaqa", "gsm8k", "triviaqa_train", "gsm8k_train"] # , "nq_train"]
+local_datasets = ["humaneval", "nq", "triviaqa", "gsm8k"] #, "triviaqa_train", "gsm8k_train"] # , "nq_train"]
+local_datasets_ppl = ["humaneval_ppl", "nq_ppl", "triviaqa_ppl", "gsm8k_ppl"]
+
 
 model_prefix = "/fs-computility/llm/shared/llmeval/models/opencompass_hf_hub/"
 
@@ -126,6 +128,17 @@ def get_tp(model_name):
         return 4    
     return 8
 
+def get_trained_dict():
+    dct = {}
+    ckpt_prefix = "/fs-computility/llmdelivery/pengrunyu/ckpts/0107/"
+    for root, dirs, files in os.walk(ckpt_prefix):
+        for file in files:
+            if file.endswith(".pt"):
+                model = root[len(ckpt_prefix):].replace("/best", "").replace("/", "_")
+                dct[model] = root
+                # return dct
+    return dct
+
 def ali_h_a_run(
     model_name, 
     dataset_name, 
@@ -227,10 +240,24 @@ def volc_run(
     if model_name == "all":
         for model_name, model_path in local_models.items():
             volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
+    elif model_name == "test_all":
+        assert pik
+        assert try_resume
+        for model_name, model_path in get_trained_dict().items():
+            volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
+    elif dataset_name == "all_gen_as_ppl":
+        for dataset_name in local_datasets_ppl:
+            if dataset_name.endswith("ppl"):
+                volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     elif dataset_name == "all":
         for dataset_name in local_datasets:
             volc_run(model_name, dataset_name, entry_file, log_dir, batch_size, n, temperature, infer_only, judge_only, pik, try_resume)
     else:
+        if dataset_name.endswith("ppl"):
+            assert infer_only
+            assert n == 1
+            assert temperature == 0.0
+
         work_dir = os.getcwd()
         log_file = Path(log_dir) / (model_name + "_" + dataset_name + ".log")
         yaml_file = Path(log_dir) / (model_name + "_" + dataset_name + ".yaml")

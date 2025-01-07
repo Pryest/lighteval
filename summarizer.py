@@ -13,7 +13,10 @@ for root, dirs, files in os.walk("../logs"):
             model = model_task.split("_")[0]
             task = "_".join(model_task.split("_")[1:])
             with open(os.path.join(root, file), "r") as f:
-                text = f.read()
+                try:
+                    text = f.read()
+                except:
+                    print(root, file)
                 res = re.findall(pattern, text)
                 if res:
                     results.append((model, task, float(res[0])))

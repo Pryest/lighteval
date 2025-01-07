@@ -1,5 +1,6 @@
 import os, json
 from torch.utils.data import Dataset
+from .general import ppl_post_process_func_v1
 
 class HumanevalGenDataset(Dataset):
     def __init__(self, 
@@ -84,3 +85,11 @@ humaneval_gen_conf = {
 #     "version": "v2",
 #     "type": "generation",
 # }
+
+humaneval_ppl_conf = {
+    "dataset": HumanevalGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
+    "version": "v1",
+    "type": "ppl",
+}

@@ -2,7 +2,7 @@ import os, json
 import pandas as pd
 from torch.utils.data import Dataset
 from .general import gen_collate_fn_v1 as collate_fn_v1
-from .general import gen_post_process_func_v1 as post_process_func_v1
+from .general import gen_post_process_func_v1, ppl_post_process_func_v1
 from .general import judge_gen
 
 
@@ -41,7 +41,15 @@ class NQGenDataset(Dataset):
 nq_gen_conf = {
     "dataset": NQGenDataset,
     "collate_fn": collate_fn_v1,
-    "post_process_func": post_process_func_v1,
+    "post_process_func": gen_post_process_func_v1,
     "version": "v1",
     "type": "generation",
+}
+
+nq_ppl_conf = {
+    "dataset": NQGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
+    "version": "v1",
+    "type": "ppl",
 }
