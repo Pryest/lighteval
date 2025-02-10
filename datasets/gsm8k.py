@@ -44,6 +44,39 @@ class GSM8kTrainGenDataset(GSM8kGenDataset):
         super().__init__(data_path)
 
 
+class ArithmeticTrainGenDataset(GSM8kGenDataset):
+    def __init__(self, 
+        data_path=f"{os.environ['datadir']}/ocdata/arithmetic/train.jsonl",
+    ):
+        super().__init__(data_path)
+
+
+class ArithmeticInterGenDataset(GSM8kGenDataset):
+    def __init__(self, 
+        data_path=f"{os.environ['datadir']}/ocdata/arithmetic/interpolate.jsonl",
+    ):
+        super().__init__(data_path)
+
+
+class ApeTrainGenDataset(GSM8kGenDataset):
+    def __init__(self, 
+        data_path=f"{os.environ['datadir']}/ocdata/ape/train.jsonl",
+    ):
+        super().__init__(data_path)
+
+class ApeValidationGenDataset(GSM8kGenDataset):
+    def __init__(self, 
+        data_path=f"{os.environ['datadir']}/ocdata/ape/validation.jsonl",
+    ):
+        super().__init__(data_path)
+
+class ApeTestGenDataset(GSM8kGenDataset):
+    def __init__(self, 
+        data_path=f"{os.environ['datadir']}/ocdata/ape/test.jsonl",
+    ):
+        super().__init__(data_path)
+
+
 gsm8k_gen_conf = {
     "dataset": GSM8kGenDataset,
     "collate_fn": collate_fn_v1,
@@ -65,5 +98,71 @@ gsm8k_ppl_conf = {
     "collate_fn": collate_fn_v1,
     "post_process_func": ppl_post_process_func_v1,
     "version": "v1",
+    "type": "ppl",
+}
+
+arithmetic_train_gen_conf = {
+    "dataset": ArithmeticTrainGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": gen_post_process_func_v1,
+    "version": "v1",
+    "type": "generation",
+}
+
+arithmetic_inter_gen_conf = {
+    "dataset": ArithmeticInterGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": gen_post_process_func_v1,
+    "version": "v1",
+    "type": "generation",
+}
+
+arithmetic_inter_ppl_conf = {
+    "dataset": ArithmeticInterGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
+    "version": "v1",
+    "type": "ppl",
+}
+
+ape_train_gen_conf = {
+    "dataset": ApeTrainGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": gen_post_process_func_v1,
+    "type": "generation",
+}
+
+ape_validation_gen_conf = {
+    "dataset": ApeValidationGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": gen_post_process_func_v1,
+    "type": "generation",
+}
+
+ape_test_gen_conf = {
+    "dataset": ApeTestGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": gen_post_process_func_v1,
+    "type": "generation",
+}
+
+ape_train_ppl_conf = {
+    "dataset": ApeTrainGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
+    "type": "ppl",
+}
+
+ape_validation_ppl_conf = {
+    "dataset": ApeValidationGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
+    "type": "ppl",
+}
+
+ape_test_ppl_conf = {
+    "dataset": ApeTestGenDataset,
+    "collate_fn": collate_fn_v1,
+    "post_process_func": ppl_post_process_func_v1,
     "type": "ppl",
 }

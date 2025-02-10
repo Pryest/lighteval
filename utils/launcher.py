@@ -6,9 +6,14 @@ import math
 import yaml
 
 
-local_datasets = ["humaneval", "nq", "triviaqa", "gsm8k"] #, "triviaqa_train", "gsm8k_train"] # , "nq_train"]
-local_datasets_ppl = ["humaneval_ppl", "nq_ppl", "triviaqa_ppl", "gsm8k_ppl"]
+# local_datasets = ["humaneval", "nq", "triviaqa", "gsm8k"] #, "triviaqa_train", "gsm8k_train"] # , "nq_train"]
+# local_datasets_ppl = ["humaneval_ppl", "nq_ppl", "triviaqa_ppl", "gsm8k_ppl"]
 
+# local_datasets = ["arithmetic_train", "arithmetic_inter"]
+# local_datasets_ppl = ["arithmetic_inter_ppl"]
+
+local_datasets = ["ape_train", "ape_validation", "ape_test"]
+local_datasets_ppl = ["ape_train_ppl", "ape_validation_ppl", "ape_test_ppl"]
 
 model_prefix = "/fs-computility/llm/shared/llmeval/models/opencompass_hf_hub/"
 
@@ -91,7 +96,7 @@ local_models = {
 ali_h_a_script_format = """\
 dlc create job \
 --kind PyTorchJob \
---config /cpfs01/shared/llm_ddd/b_cpfs_trasfer_data/pengrunyu/dlc.cfg \
+--config /cpfs01/shared/llm_ddd/b_cpfs_trasfer_data/$USER/dlc.cfg \
 --name vllm_test --priority 4 \
 --data_sources="" \
 --worker_count 1 \
@@ -130,7 +135,7 @@ def get_tp(model_name):
 
 def get_trained_dict():
     dct = {}
-    ckpt_prefix = "/fs-computility/llmdelivery/pengrunyu/ckpts/0107/"
+    ckpt_prefix = "/fs-computility/llmdelivery/$USER/ckpts/0107/"
     for root, dirs, files in os.walk(ckpt_prefix):
         for file in files:
             if file.endswith(".pt"):
@@ -188,8 +193,8 @@ def ali_h_a_run(
 
 
 volc_entrypoint = """\
-export datadir=/fs-computility/llm/shared/pengrunyu/data && \
-source /fs-computility/llm/shared/pengrunyu/miniconda3/bin/activate /fs-computility/llm/shared/pengrunyu/miniconda3/envs/1225/ && \
+export datadir=/fs-computility/llm/shared/$USER/data && \
+source /fs-computility/llm/shared/$USER/miniconda3/bin/activate /fs-computility/llm/shared/$USER/miniconda3/envs/1225/ && \
 cd {work_dir} && export VLLM_USE_MODELSCOPE=False && \
 python {entry_file} \
 --model_name={model_name} \

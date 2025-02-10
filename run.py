@@ -74,7 +74,7 @@ def system_2(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--model_name", type=str, default="test_all")
+    parser.add_argument("--model_name", type=str, default="all")
     parser.add_argument("--dataset_name", type=str, default="all")
     # parser.add_argument("--model_name", type=str, default="llama3.1-70b")
     # parser.add_argument("--dataset_name", type=str, default="triviaqa_train")
